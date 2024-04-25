@@ -28,13 +28,59 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
+
+
+        const artsCraftsCollection = client.db('artscraftDB').collection('arts');
+        const userCollection = client.db('artscraftDB').collection('user');
+        const userArtsCraftsCollection = client.db('artscraftDB').collection('userartscraft')
+
+        app.get('/userartscraft',async(req,res)=>{
+            const cursor = userArtsCraftsCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.post('/userartscraft', async (req, res) => {
+            console.log('hit');
+            const newArts = req.body;
+            console.log(newArts);
+            const result = await userArtsCraftsCollection.insertOne(newArts);
+            res.send(result);
+        })
+        app.get('/artscraft',async(req,res)=>{
+            const cursor = artsCraftsCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.post('/artscraft', async (req, res) => {
+            const newArts = req.body;
+            console.log(newArts);
+            const result = await artsCraftsCollection.insertOne(newArts);
+            res.send(result);
+        })
+
+        app.post('/user',async(req,res)=>{
+            const user = req.body;
+            console.log(user);
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
+        
+        app.get('/user',async(req,res)=>{
+            const cursor = userCollection.find();
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
-        await client.close();
+        // await client.close();
     }
 }
 run().catch(console.dir);
