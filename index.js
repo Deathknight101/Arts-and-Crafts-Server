@@ -3,7 +3,7 @@ const cors = require('cors');
 app = express()
 require('dotenv').config();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 app.use(cors());
 app.use(express.json());
@@ -33,22 +33,23 @@ async function run() {
 
         const artsCraftsCollection = client.db('artscraftDB').collection('arts');
         const userCollection = client.db('artscraftDB').collection('user');
-        const userArtsCraftsCollection = client.db('artscraftDB').collection('userartscraft')
 
-        app.get('/userartscraft',async(req,res)=>{
-            const cursor = userArtsCraftsCollection.find();
+        app.get('/user/artscraft/:email', async (req, res) => {
+            const email = req.params.email;
+
+            const query = { email };
+            const cursor = artsCraftsCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
-
-        app.post('/userartscraft', async (req, res) => {
-            console.log('hit');
-            const newArts = req.body;
-            console.log(newArts);
-            const result = await userArtsCraftsCollection.insertOne(newArts);
-            res.send(result);
+        app.get('/artscraft/:id',async (req, res) => {
+           const id = req.params.id
+           query = {_id: new ObjectId(id)}
+           const result = await artsCraftsCollection.findOne(query);
+           res.send(result);
         })
-        app.get('/artscraft',async(req,res)=>{
+
+        app.get('/artscraft', async (req, res) => {
             const cursor = artsCraftsCollection.find();
             const result = await cursor.toArray();
             res.send(result);
@@ -61,18 +62,43 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/user',async(req,res)=>{
+        app.post('/user', async (req, res) => {
             const user = req.body;
             console.log(user);
             const result = await userCollection.insertOne(user);
             res.send(result);
         })
-        
-        app.get('/user',async(req,res)=>{
+
+        app.get('/user', async (req, res) => {
             const cursor = userCollection.find();
             const users = await cursor.toArray();
             res.send(users);
         })
+        
+        app.put('/artscraft/:id',async(req,res)=>{
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)}
+            const options= {upsert: true}
+            const updateArts = req.body;
+            const arts = {
+                $set:{
+                    name: updateArts.name , 
+                    price: updateArts.price , 
+                    rating: updateArts.rating , 
+                    customization: updateArts.customization , 
+                    stock: updateArts.stock , 
+                    description: updateArts.description , photo: updateArts.photo , 
+                    userName: updateArts.userName , 
+                    email: updateArts.email , 
+                    time: updateArts.time , 
+                    sub_catagory: updateArts.sub_catagory
+                }
+            }
+            const result = await artsCraftsCollection.updateOne(filter,arts,options);
+            res.send(result);
+        })
+
+
 
 
         // Send a ping to confirm a successful connection
