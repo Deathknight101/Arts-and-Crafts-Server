@@ -33,6 +33,7 @@ async function run() {
 
         const artsCraftsCollection = client.db('artscraftDB').collection('arts');
         const userCollection = client.db('artscraftDB').collection('user');
+        const categoryCollection = client.db('artscraftDB').collection('category');
 
         app.get('/user/artscraft/:email', async (req, res) => {
             const email = req.params.email;
@@ -42,11 +43,20 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-        app.get('/artscraft/:id',async (req, res) => {
-           const id = req.params.id
-           query = {_id: new ObjectId(id)}
-           const result = await artsCraftsCollection.findOne(query);
-           res.send(result);
+
+        app.get('/artscraft/:category', async (req, res) => {
+            const category = req.params.category;
+            const query = { sub_catagory:category };
+            const cursor = artsCraftsCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get('/artscraft/:id', async (req, res) => {
+            const id = req.params.id
+            query = { _id: new ObjectId(id) }
+            const result = await artsCraftsCollection.findOne(query);
+            res.send(result);
         })
 
         app.get('/artscraft', async (req, res) => {
@@ -62,6 +72,25 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/category', async (req, res) => {
+            const cursor = categoryCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.post('/category', async (req, res) => {
+            const category = req.body.category.toUpperCase();
+            console.log(req.body);
+            console.log(category);
+            const query = { category };
+            const exists = await categoryCollection.findOne(query);
+            if (!exists) {
+                const result = await categoryCollection.insertOne({ category });
+                res.send(result);
+
+            }
+        })
+
         app.post('/user', async (req, res) => {
             const user = req.body;
             console.log(user);
@@ -75,34 +104,34 @@ async function run() {
             res.send(users);
         })
 
-        app.delete('/artscraft/:id', async(req,res)=>{
+        app.delete('/artscraft/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await artsCraftsCollection.deleteOne(query);
             res.send(result);
         })
 
-        
-        app.put('/artscraft/:id',async(req,res)=>{
+
+        app.put('/artscraft/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: new ObjectId(id)}
-            const options= {upsert: true}
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
             const updateArts = req.body;
             const arts = {
-                $set:{
-                    name: updateArts.name , 
-                    price: updateArts.price , 
-                    rating: updateArts.rating , 
-                    customization: updateArts.customization , 
-                    stock: updateArts.stock , 
-                    description: updateArts.description , photo: updateArts.photo , 
-                    userName: updateArts.userName , 
-                    email: updateArts.email , 
-                    time: updateArts.time , 
+                $set: {
+                    name: updateArts.name,
+                    price: updateArts.price,
+                    rating: updateArts.rating,
+                    customization: updateArts.customization,
+                    stock: updateArts.stock,
+                    description: updateArts.description, photo: updateArts.photo,
+                    userName: updateArts.userName,
+                    email: updateArts.email,
+                    time: updateArts.time,
                     sub_catagory: updateArts.sub_catagory
                 }
             }
-            const result = await artsCraftsCollection.updateOne(filter,arts,options);
+            const result = await artsCraftsCollection.updateOne(filter, arts, options);
             res.send(result);
         })
 
