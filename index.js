@@ -8,13 +8,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors());
 app.use(express.json());
 
-//paintingMaster
-//ERY4IbkpSJfqiW71
 
-console.log(process.env.DB_USER);
-console.log(process.env.DB_PASS);
+
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ktqmnde.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -46,7 +45,7 @@ async function run() {
 
         app.get('/artscraft/:category', async (req, res) => {
             const category = req.params.category;
-            const query = { sub_catagory:category };
+            const query = { sub_catagory: category };
             const cursor = artsCraftsCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
@@ -95,9 +94,19 @@ async function run() {
         app.post('/user', async (req, res) => {
             const user = req.body;
             console.log(user);
-            const result = await userCollection.insertOne(user);
-            res.send(result);
+            const query = { email: user.email };
+            const exists = await userCollection.findOne(query);
+            if (!exists) {
+                const result = await userCollection.insertOne(user);
+                res.send(result);
+                return
+            }else{
+                res.send({status:'already exists'})
+            }
+
         })
+
+
 
         app.get('/user', async (req, res) => {
             const cursor = userCollection.find();
