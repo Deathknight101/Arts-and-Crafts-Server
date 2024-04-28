@@ -52,12 +52,13 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/artscraft/:id', async (req, res) => {
+        app.get('/artscraft/getexistingdata/:id', async (req, res) => {
             const id = req.params.id
             query = { _id: new ObjectId(id) }
             const result = await artsCraftsCollection.findOne(query);
             res.send(result);
         })
+
 
         app.get('/artscraft', async (req, res) => {
             const cursor = artsCraftsCollection.find();
